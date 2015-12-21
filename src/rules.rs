@@ -7,10 +7,13 @@ use std::collections::HashMap;
 /// A production (or evolution) rule consists in a symbol combined with its
 /// corresponding result. The internal data structure is up to the structures
 /// implementing this trait.
-pub trait LRules<S> {
+pub trait LRules<S: Eq> {
     /// Get the production of the given symbol, or None if no matching rule is
     /// found.
     fn production(&self, symbol: &S) -> Option<&Vec<S>>;
+
+    /// Get the expansion size of the worse-case production.
+    fn biggest_expansion(&self) -> usize;
 }
 
 /// HashMap-based Rules structure.
@@ -19,21 +22,30 @@ pub struct HashMapRules<S>
     where S: Eq + Hash
 {
     rules: HashMap<S, Vec<S>>,
+    biggest_expansion: usize,
 }
 
 impl<S> HashMapRules<S> where S: Eq + Hash
 {
     pub fn new() -> HashMapRules<S> {
-        HashMapRules { rules: HashMap::new() }
+        HashMapRules {
+            rules: HashMap::new(),
+            biggest_expansion: 0,
+        }
     }
 
     /// Add a new production rule or modify an existing one.
     /// Return true if an existing rule was modified, false otherwise.
     pub fn set(&mut self, symbol: S, production: Vec<S>) -> bool {
-        match self.rules.insert(symbol, production) {
+        let production_len = production.len();
+        let modified = match self.rules.insert(symbol, production) {
             Some(_) => true,
             None => false,
+        };
+        if production_len > self.biggest_expansion {
+            self.biggest_expansion = production_len;
         }
+        modified
     }
 }
 
@@ -48,6 +60,10 @@ impl<S> LRules<S> for HashMapRules<S> where S: Eq + Hash
 {
     fn production(&self, symbol: &S) -> Option<&Vec<S>> {
         self.rules.get(symbol)
+    }
+
+    fn biggest_expansion(&self) -> usize {
+        self.biggest_expansion
     }
 }
 
@@ -70,6 +86,7 @@ mod test {
         rules.set_str('A', "+B−A−B+");
         rules.set_str('B', "−A+B+A−");
 
+        assert_eq!(rules.biggest_expansion(), 7);
         assert_eq!(rules.production(&'A'),
                    Some(&"+B−A−B+".chars().collect()));
         assert_eq!(rules.production(&'B'),
@@ -83,6 +100,7 @@ mod test {
         rules.set_ascii(b'A', b"AB");
         rules.set_ascii(b'B', b"A");
 
+        assert_eq!(rules.biggest_expansion(), 2);
         assert_eq!(rules.production(&b'A'), Some(&b"AB".to_vec()));
         assert_eq!(rules.production(&b'B'), Some(&b"A".to_vec()));
         assert_eq!(rules.production(&b'C'), None);

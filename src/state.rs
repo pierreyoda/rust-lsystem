@@ -1,4 +1,13 @@
+use std::rc::Rc;
+
 use super::rules::LRules;
+
+pub type RulesValue<'a, S> = Rc<Box<LRules<S> + 'a>>;
+
+pub fn new_rules_value<'a, S: Eq, R: 'a + LRules<S>>(rules: R) -> RulesValue<'a, S> {
+    Rc::new(Box::new(rules))
+}
+
 
 /// Structure containing all that is needed to fully describe the current state
 /// of an L-System.
@@ -11,18 +20,18 @@ pub struct LSystem<'a, S>
     /// The current internal state of the L-System, stored as a list of symbols.
     state: Vec<S>,
     /// The L-System's production rules.
-    /// TODO: better structure ? but : generic is cumbersome + ?Sized problems
-    rules: Box<LRules<S> + 'a>,
+    rules: RulesValue<'a, S>,
 }
 
 impl<'a, S> LSystem<'a, S> where S: Eq
 {
     /// Create a new L-System with the given axiom (initial state, or seed)
     /// and production rules.
-    pub fn new(axiom: Vec<S>, rules: Box<LRules<S> + 'a>) -> LSystem<S> {
+    /// Optionally, one can specify the current iteration of the L-System.
+    pub fn new(axiom: Vec<S>, rules: RulesValue<'a, S>, iteration: Option<u64>) -> LSystem<S> {
         LSystem {
             rules: rules,
-            iteration: 0,
+            iteration: iteration.unwrap_or(0),
             state: axiom,
         }
     }
@@ -38,8 +47,8 @@ impl<'a, S> LSystem<'a, S> where S: Eq
     }
 
     /// Get the production rules.
-    pub fn rules(&self) -> &LRules<S> {
-        &*self.rules
+    pub fn rules(&self) -> &RulesValue<'a, S> {
+        &self.rules
     }
 }
 
@@ -47,7 +56,7 @@ pub type AsciiLSystem<'a> = LSystem<'a, u8>;
 
 impl<'a> LSystem<'a, char> {
     /// Easily create a new, char-based L-System.
-    pub fn new_with_char(axiom: &str, rules: Box<LRules<char>>) -> Self {
-        LSystem::new(axiom.chars().collect(), rules)
+    pub fn new_with_char(axiom: &str, rules: RulesValue<'a, char>) -> Self {
+        LSystem::new(axiom.chars().collect(), rules, None)
     }
 }
