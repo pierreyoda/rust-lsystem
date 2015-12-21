@@ -1,6 +1,8 @@
 use super::rules::LRules;
 use super::state::LSystem;
 
+/// L-System processors are responsible for taking a L-System and evolving it to
+// its next state.
 pub trait LProcessor<S: Clone+Eq> {
     /// Try and iterate the given L-System into its next state according to
     /// its production rules.
@@ -15,12 +17,14 @@ impl<S> LProcessor<S> for SimpleProcessor where S: Clone + Eq
 {
     fn iterate<'a>(lsystem: &LSystem<'a, S>) -> Result<LSystem<'a, S>, String> {
         // allocate a new state with the worst possible size
+        // (may cause overflow one or more iteration(s) earlier with huge states/production rules)
         let rules = lsystem.rules().clone();
-        let new_state_size = lsystem.state().len() * rules.biggest_expansion();
-        if new_state_size > usize::max_value() {
-            return Err(format!("SimpleProcessor : cannot allocate a Vec of size {}",
-                               new_state_size));
-        }
+        let new_state_size = match lsystem.state().len().checked_mul(rules.biggest_expansion()) {
+            Some(v) => v,
+            None => {
+                return Err(format!("SimpleProcessor : usize overflow when computing new Vec size"))
+            }
+        };
         let mut new_state: Vec<S> = Vec::with_capacity(new_state_size);
 
         // iterate over the symbols
@@ -31,6 +35,8 @@ impl<S> LProcessor<S> for SimpleProcessor where S: Clone + Eq
             }
         }
         new_state.shrink_to_fit();
+
+        // return the evolved L-System
         Ok(LSystem::<S>::new(new_state, rules.clone(), Some(lsystem.iteration() + 1)))
     }
 }
