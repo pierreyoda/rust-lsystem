@@ -10,7 +10,8 @@ pub trait LProcessor<S: Clone+Eq> {
     fn iterate<'a>(&mut self, lsystem: &LSystem<'a, S>) -> Result<LSystem<'a, S>, String>;
 }
 
-/// Simple thread-blocking L-System processor.
+/// Simple, linear L-System interpreter.
+/// NB: can rapidly freeze its container thread.
 pub struct SimpleProcessor;
 
 impl<S> LProcessor<S> for SimpleProcessor where S: Clone + Eq

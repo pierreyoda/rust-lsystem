@@ -25,7 +25,8 @@ pub trait LInterpreter<S: Clone+Eq> {
     fn interpret(&mut self, lsystem: &LSystem<S>) -> Result<Vec<TurtleCommand>, String>;
 }
 
-/// Simple, thread-blocking L-System interpreter.
+/// Simple, linear L-System interpreter.
+/// NB: can rapidly freeze its container thread.
 pub struct SimpleInterpreter;
 
 impl<S> LInterpreter<S> for SimpleInterpreter where S: Clone + Eq
