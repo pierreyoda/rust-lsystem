@@ -1,0 +1,11 @@
+[package]
+name = "rust-lsystem"
+version = "0.1.0"
+authors = ["pierreyoda <pierreyoda@users.noreply.github.com>"]
+
+[[bin]]
+name = "rust-lsystem"
+
+[lib]
+name = "rustlsystem"
+path = "src/lib.rs"

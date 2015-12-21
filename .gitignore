@@ -60,3 +60,6 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+*.sublime-workspace
+rust-lsystem.sublime-project
+*.lock
