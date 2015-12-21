@@ -7,7 +7,7 @@ pub trait LProcessor<S: Clone+Eq> {
     /// Try and iterate the given L-System into its next state according to
     /// its production rules.
     /// Return None if successful, Some(error_string) otherwise.
-    fn iterate<'a>(lsystem: &LSystem<'a, S>) -> Result<LSystem<'a, S>, String>;
+    fn iterate<'a>(&mut self, lsystem: &LSystem<'a, S>) -> Result<LSystem<'a, S>, String>;
 }
 
 /// Simple thread-blocking L-System processor.
@@ -15,7 +15,7 @@ pub struct SimpleProcessor;
 
 impl<S> LProcessor<S> for SimpleProcessor where S: Clone + Eq
 {
-    fn iterate<'a>(lsystem: &LSystem<'a, S>) -> Result<LSystem<'a, S>, String> {
+    fn iterate<'a>(&mut self, lsystem: &LSystem<'a, S>) -> Result<LSystem<'a, S>, String> {
         // allocate a new state with the worst possible size
         // (may cause overflow one or more iteration(s) earlier with huge states/production rules)
         let rules = lsystem.rules().clone();
@@ -45,13 +45,14 @@ impl<S> LProcessor<S> for SimpleProcessor where S: Clone + Eq
 mod test {
     use rules::HashMapRules;
     use state::{LSystem, new_rules_value};
+    use interpret::TurtleCommand;
     use super::*;
 
     #[test]
     fn simple_processing() {
         let mut rules = HashMapRules::new(); // algae rules
-        rules.set_str('A', "AB");
-        rules.set_str('B', "A");
+        rules.set_str('A', "AB", TurtleCommand::None);
+        rules.set_str('B', "A", TurtleCommand::None);
         let expected_states = ["A",
                                "AB",
                                "ABA",
@@ -66,7 +67,7 @@ mod test {
             assert_eq!(lsystem.iteration(), n as u64);
             let expected: Vec<char> = expected_states[n].chars().collect();
             assert_eq!(lsystem.state(), &expected[..]);
-            lsystem = SimpleProcessor::iterate(&lsystem).ok().unwrap();
+            lsystem = SimpleProcessor.iterate(&lsystem).ok().unwrap();
         }
     }
 }
