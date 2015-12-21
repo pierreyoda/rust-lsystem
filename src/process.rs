@@ -31,7 +31,7 @@ impl<S> LProcessor<S> for SimpleProcessor where S: Clone + Eq
         for s in lsystem.state() {
             match rules.production(&s) {
                 Some(symbols) => new_state.extend(symbols.iter().cloned()),
-                None => (),
+                None => new_state.push(s),
             }
         }
         new_state.shrink_to_fit();
