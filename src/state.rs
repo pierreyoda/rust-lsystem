@@ -1,11 +1,11 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use super::rules::LRules;
 
-pub type RulesValue<'a, S> = Rc<Box<LRules<S> + 'a>>;
+pub type RulesValue<'a, S> = Arc<Box<LRules<S> + 'a + Sync + Send>>;
 
-pub fn new_rules_value<'a, S: Eq, R: 'a + LRules<S>>(rules: R) -> RulesValue<'a, S> {
-    Rc::new(Box::new(rules))
+pub fn new_rules_value<'a, S: Eq, R: 'a + LRules<S> + Sync + Send>(rules: R) -> RulesValue<'a, S> {
+    Arc::new(Box::new(rules))
 }
 
 

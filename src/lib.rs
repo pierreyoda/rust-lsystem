@@ -1,3 +1,5 @@
+extern crate simple_parallel;
+
 pub mod interpret;
 pub mod process;
 pub mod rules;

@@ -1,5 +1,9 @@
+mod chunks;
+
 use super::rules::LRules;
-use super::state::LSystem;
+use super::state::{LSystem, RulesValue};
+
+pub use self::chunks::ChunksProcessor;
 
 /// L-System processors are responsible for taking a L-System and evolving it to
 // its next state.
@@ -14,31 +18,44 @@ pub trait LProcessor<S: Clone+Eq> {
 /// NB: can rapidly freeze its container thread.
 pub struct SimpleProcessor;
 
+impl SimpleProcessor {
+    /// Iterate a slice of symbols into its next iteration according to the given
+    /// production rules.
+    /// TODO : replace worse-case symbol expansion with average ?
+    pub fn iterate_slice<'a, S: Clone + Eq>(state: &[S],
+                                            rules: &RulesValue<'a, S>)
+                                            -> Result<Vec<S>, String> {
+        let result_size = match state.len().checked_mul(rules.biggest_expansion()) {
+            Some(v) => v,
+            None => {
+                return Err(format!("SimpleProcessor::iterate_slice : usize overflow when \
+                                    computing new Vec size"))
+            }
+        };
+        let mut result: Vec<S> = Vec::with_capacity(result_size);
+
+        for s in state {
+            match rules.production(&s) {
+                Some(symbols) => result.extend(symbols.iter().cloned()),
+                None => result.push(s.clone()),
+            }
+        }
+        result.shrink_to_fit();
+
+        Ok(result)
+    }
+}
+
 impl<S> LProcessor<S> for SimpleProcessor where S: Clone + Eq
 {
     fn iterate<'a>(&mut self, lsystem: &LSystem<'a, S>) -> Result<LSystem<'a, S>, String> {
         // allocate a new state with the worst possible size
         // (may cause overflow one or more iteration(s) earlier with huge states/production rules)
         let rules = lsystem.rules().clone();
-        let new_state_size = match lsystem.state().len().checked_mul(rules.biggest_expansion()) {
-            Some(v) => v,
-            None => {
-                return Err(format!("SimpleProcessor : usize overflow when computing new Vec size"))
-            }
-        };
-        let mut new_state: Vec<S> = Vec::with_capacity(new_state_size);
-
-        // iterate over the symbols
-        for s in lsystem.state() {
-            match rules.production(&s) {
-                Some(symbols) => new_state.extend(symbols.iter().cloned()),
-                None => new_state.push(s.clone()),
-            }
-        }
-        new_state.shrink_to_fit();
+        let new_state = try!(SimpleProcessor::iterate_slice(lsystem.state(), &rules));
 
         // return the evolved L-System
-        Ok(LSystem::<S>::new(new_state, rules.clone(), Some(lsystem.iteration() + 1)))
+        Ok(LSystem::<S>::new(new_state, rules, Some(lsystem.iteration() + 1)))
     }
 }
 
