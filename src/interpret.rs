@@ -18,6 +18,8 @@ pub enum TurtleCommand {
     None,
 }
 
+unsafe impl Send for TurtleCommand {}
+
 /// L-System interpreters translate the state of an L-System into a sequence
 /// of drawing instructions in order to represent it (think Turtle graphics
 /// from Logo).

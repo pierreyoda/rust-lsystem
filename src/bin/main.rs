@@ -1,3 +1,5 @@
+mod app;
+
 extern crate rustlsystem;
 use rustlsystem::rules::HashMapRules;
 use rustlsystem::state::{LSystem, new_rules_value};
@@ -12,11 +14,12 @@ fn main() {
     println!("Iteration {} : {:?}", lsystem.iteration(), lsystem.state());
 
     let mut processor = SimpleProcessor;
-    for _ in 0..5 {
+    for _ in 0..30 {
         lsystem = match processor.iterate(&lsystem) {
             Ok(r) => r,
             Err(why) => panic!(why),
         };
-        println!("Iteration {} : {:?}", lsystem.iteration(), lsystem.state());
+        println!("{}", lsystem.state().len());
+        // println!("Iteration {} : {:?}", lsystem.iteration(), lsystem.state());
     }
 }
