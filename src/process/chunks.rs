@@ -1,16 +1,12 @@
 use std::sync::{Arc, Mutex};
 use simple_parallel;
 
-use rules::LRules;
 use state::LSystem;
 use super::{LProcessor, SimpleProcessor};
 
 /// Parallel processor dividing a state into chunks to be individually iterated
 /// within a pool of threads.
 pub struct ChunksProcessor {
-    /// The maximum number of tasks (sub-threads), i.e. the maximum amount of
-    /// chunks treated in parallel.
-    max_tasks: usize,
     /// The number of symbols per full chunk.
     chunk_size: usize,
     /// The thread pool.
@@ -31,7 +27,6 @@ impl ChunksProcessor {
                         chunks_size))
         } else {
             Ok(ChunksProcessor {
-                max_tasks: max_tasks,
                 chunk_size: chunks_size,
                 pool: simple_parallel::Pool::new(max_tasks),
             })
@@ -86,7 +81,7 @@ impl<S> LProcessor<S> for ChunksProcessor where S: Clone + Eq + Send + Sync
         // Final assembling
         let mut new_state_size = 0usize;
         let mut new_state: Vec<S> = Vec::new();
-        let mut data = sub_states.lock().unwrap();
+        let data = sub_states.lock().unwrap();
         for n in 0..chunks_number {
             let chunk_iterated = &data[n];
             new_state_size = match new_state_size.checked_add(chunk_iterated.len()) {
