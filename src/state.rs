@@ -11,6 +11,7 @@ pub fn new_rules_value<'a, S: Eq, R: 'a + LRules<S> + Sync + Send>(rules: R) -> 
 
 /// Structure containing all that is needed to fully describe the current state
 /// of an L-System.
+#[derive(Clone)]
 pub struct LSystem<'a, S>
     where S: Eq
 {
