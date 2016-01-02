@@ -24,6 +24,9 @@ pub trait LRules<S: Eq> {
 
     /// Get the expansion size of the worse-case production.
     fn biggest_expansion(&self) -> usize;
+
+    /// Get the average expansion size of the production rules.
+    fn average_expansion(&self) -> f64;
 }
 
 #[derive(Clone, Debug)]
@@ -36,6 +39,7 @@ pub struct HashMapRules<S>
 {
     rules: HashMap<S, SymbolRule<S>>,
     biggest_expansion: usize,
+    average_expansion: f64,
 }
 
 impl<S> HashMapRules<S> where S: Eq + Hash
@@ -44,6 +48,7 @@ impl<S> HashMapRules<S> where S: Eq + Hash
         HashMapRules {
             rules: HashMap::new(),
             biggest_expansion: 0,
+            average_expansion: 0f64,
         }
     }
 
@@ -55,9 +60,16 @@ impl<S> HashMapRules<S> where S: Eq + Hash
             Some(_) => true,
             None => false,
         };
+
+        // biggest expansion computing
         if production_len > self.biggest_expansion {
             self.biggest_expansion = production_len;
         }
+        // average expansion computing
+        assert!(self.rules.len() > 0);
+        self.average_expansion += (production_len as f64 - self.average_expansion) /
+                                  (self.rules.len() as f64);
+
         modified
     }
 }
@@ -88,6 +100,10 @@ impl<S> LRules<S> for HashMapRules<S> where S: Eq + Hash
     fn biggest_expansion(&self) -> usize {
         self.biggest_expansion
     }
+
+    fn average_expansion(&self) -> f64 {
+        self.average_expansion
+    }
 }
 
 /// Default, ASCII-only 'HashMapRules' type.
@@ -117,6 +133,7 @@ mod test {
         rules.set_str('-', "-", TurtleCommand::RotateBy(-60f32));
 
         assert_eq!(rules.biggest_expansion(), 7);
+        assert_eq!(rules.average_expansion(), 4.0);
         assert_eq!(rules.production(&'A'),
                    Some(&"+B−A−B+".chars().collect()));
         assert_eq!(rules.production(&'B'),
@@ -131,6 +148,7 @@ mod test {
         rules.set_ascii(b'B', b"A", TurtleCommand::None);
 
         assert_eq!(rules.biggest_expansion(), 2);
+        assert_eq!(rules.average_expansion(), 1.5);
         assert_eq!(rules.production(&b'A'), Some(&b"AB".to_vec()));
         assert_eq!(rules.production(&b'B'), Some(&b"A".to_vec()));
         assert_eq!(rules.production(&b'C'), None);
