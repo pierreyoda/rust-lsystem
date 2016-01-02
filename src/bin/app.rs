@@ -26,35 +26,43 @@ impl Application {
 
         // worker test
         let processor: Box<process::LProcessor<char> + Send> =
-            Box::new(process::ChunksProcessor::new(4, 50_000).ok().unwrap());
+            Box::new(process::ChunksProcessor::new(4, 100_000).ok().unwrap());
         let interpreter: Box<interpret::LInterpreter<char> + Send> =
             Box::new(interpret::SimpleInterpreter);
         let (tx, rx) = view::start_worker(RefCell::new(processor), RefCell::new(interpreter));
-        let mut t_start = time::now();
-        let mut t_end = time::now();
 
-        Self::command_and_wait(&tx, &rx, Iterate);
+        Self::command_and_wait(&tx, &rx, Iterate, true);
         Self::command_and_wait(&tx,
                                &rx,
-                               LoadLSystem(lsystem_axiom, Box::new(lsystem_rules)));
-        Self::command_and_wait(&tx, &rx, Iterate);
-        Self::command_and_wait(&tx, &rx, Terminate);
+                               LoadLSystem(lsystem_axiom, Box::new(lsystem_rules)),
+                               true);
+        for _ in 0..16 {
+            Self::command_and_wait(&tx, &rx, Iterate, true);
+        }
+        Self::command_and_wait(&tx, &rx, Terminate, true);
     }
 
     /// Send a command to the worker thread and return the associated response or error.
     /// NB : asynchronous waiting should be preferred for long operations (e.g. iteration).
     fn command_and_wait<S: Clone + Eq>(tx: &Sender<view::MessageFromViewer<S>>,
                                        rx: &Receiver<view::MessageToViewer>,
-                                       msg: view::MessageFromViewer<S>)
+                                       msg: view::MessageFromViewer<S>,
+                                       print_time: bool)
                                        -> view::MessageToViewer {
         let error_type = view::MessageToViewer::Error(String::new());
         let response_type = view::MessageToViewer::from_command(&msg);
+
+        let t_start = time::now();
         tx.send(msg).unwrap();
+
         loop {
             match rx.recv() {
                 Ok(response) => {
                     println!("worker thread sent : {:?}", response); // test
                     if response.same_type(&response_type) || response.same_type(&error_type) {
+                        if print_time {
+                            println!("> response received after {}s", time::now() - t_start);
+                        }
                         return response;
                     }
                 }

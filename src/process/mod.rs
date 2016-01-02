@@ -21,11 +21,11 @@ pub struct SimpleProcessor;
 impl SimpleProcessor {
     /// Iterate a slice of symbols into its next iteration according to the given
     /// production rules.
-    /// TODO : replace worse-case symbol expansion with average ?
     pub fn iterate_slice<'a, S: Clone + Eq>(state: &[S],
                                             rules: &RulesValue<'a, S>)
                                             -> Result<Vec<S>, String> {
-        let result_size = match state.len().checked_mul(rules.biggest_expansion()) {
+        let estimated_result_size = rules.biggest_expansion();
+        let result_size = match state.len().checked_mul(estimated_result_size) {
             Some(v) => v,
             None => {
                 return Err(format!("SimpleProcessor::iterate_slice : usize overflow when \

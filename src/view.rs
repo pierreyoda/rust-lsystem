@@ -132,7 +132,9 @@ fn worker_loop<S: Clone + Eq>(tx: Sender<MessageToViewer>,
                                 tx.send(Error(why)).unwrap();
                                 None
                             }
-                        }
+                        };
+                        println!("> state len = {:?}\n",
+                                 lsystem.as_ref().unwrap().state().len());
                     }
                     Interpret if lsystem.is_some() => {
                         match interpreter.borrow_mut().interpret(lsystem.as_ref().unwrap()) {
