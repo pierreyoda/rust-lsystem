@@ -23,7 +23,7 @@ unsafe impl Send for TurtleCommand {}
 /// L-System interpreters translate the state of an L-System into a sequence
 /// of drawing instructions in order to represent it (think Turtle graphics
 /// from Logo).
-pub trait LInterpreter<S: Clone+Eq> {
+pub trait LInterpreter<S: Clone + Eq> {
     fn interpret(&mut self, lsystem: &LSystem<S>) -> Result<Vec<TurtleCommand>, String>;
 }
 
@@ -31,7 +31,8 @@ pub trait LInterpreter<S: Clone+Eq> {
 /// NB: can rapidly freeze its container thread.
 pub struct SimpleInterpreter;
 
-impl<S> LInterpreter<S> for SimpleInterpreter where S: Clone + Eq
+impl<S> LInterpreter<S> for SimpleInterpreter
+    where S: Clone + Eq
 {
     fn interpret(&mut self, lsystem: &LSystem<S>) -> Result<Vec<TurtleCommand>, String> {
         let rules = lsystem.rules();

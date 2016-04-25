@@ -34,7 +34,7 @@ impl Application {
                                &rx,
                                LoadLSystem(lsystem_axiom, Box::new(lsystem_rules)),
                                true);
-        for _ in 0..16 {
+        for _ in 0..10 {
             Self::command_and_wait(&tx, &rx, Iterate, true);
         }
         Self::command_and_wait(&tx, &rx, Terminate, true);

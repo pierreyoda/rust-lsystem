@@ -42,7 +42,8 @@ pub struct HashMapRules<S>
     average_expansion: f64,
 }
 
-impl<S> HashMapRules<S> where S: Eq + Hash
+impl<S> HashMapRules<S>
+    where S: Eq + Hash
 {
     pub fn new() -> HashMapRules<S> {
         HashMapRules {
@@ -87,7 +88,8 @@ impl HashMapRules<char> {
     }
 }
 
-impl<S> LRules<S> for HashMapRules<S> where S: Eq + Hash
+impl<S> LRules<S> for HashMapRules<S>
+    where S: Eq + Hash
 {
     fn production(&self, symbol: &S) -> Option<&Vec<S>> {
         self.rules.get(symbol).map(|r| &r.0)

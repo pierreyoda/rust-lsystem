@@ -7,7 +7,7 @@ pub use self::chunks::ChunksProcessor;
 
 /// L-System processors are responsible for taking a L-System and evolving it to
 // its next state.
-pub trait LProcessor<S: Clone+Eq> {
+pub trait LProcessor<S: Clone + Eq> {
     /// Try and iterate the given L-System into its next state according to
     /// its production rules.
     /// Return None if successful, Some(error_string) otherwise.
@@ -46,7 +46,8 @@ impl SimpleProcessor {
     }
 }
 
-impl<S> LProcessor<S> for SimpleProcessor where S: Clone + Eq
+impl<S> LProcessor<S> for SimpleProcessor
+    where S: Clone + Eq
 {
     fn iterate<'a>(&mut self, lsystem: &LSystem<'a, S>) -> Result<LSystem<'a, S>, String> {
         // allocate a new state with the worst possible size

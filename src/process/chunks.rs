@@ -34,7 +34,8 @@ impl ChunksProcessor {
     }
 }
 
-impl<S> LProcessor<S> for ChunksProcessor where S: Clone + Eq + Send + Sync
+impl<S> LProcessor<S> for ChunksProcessor
+    where S: Clone + Eq + Send + Sync
 {
     // TODO : better error handling...
     fn iterate<'a>(&mut self, lsystem: &LSystem<'a, S>) -> Result<LSystem<'a, S>, String> {

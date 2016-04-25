@@ -24,7 +24,8 @@ pub struct LSystem<'a, S>
     rules: RulesValue<'a, S>,
 }
 
-impl<'a, S> LSystem<'a, S> where S: Eq
+impl<'a, S> LSystem<'a, S>
+    where S: Eq
 {
     /// Create a new L-System with the given axiom (initial state, or seed)
     /// and production rules.
