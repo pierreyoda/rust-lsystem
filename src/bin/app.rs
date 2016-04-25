@@ -4,7 +4,6 @@ use std::sync::mpsc::{Sender, Receiver};
 use time;
 
 use rustlsystem::*;
-use rustlsystem::view::start_worker;
 use rustlsystem::rules::HashMapRules;
 use rustlsystem::interpret::TurtleCommand::*;
 
@@ -13,7 +12,6 @@ pub struct Application;
 
 impl Application {
     pub fn run() {
-        use rustlsystem::view::MessageToViewer::*;
         use rustlsystem::view::MessageFromViewer::*;
 
         // L-System definition

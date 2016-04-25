@@ -1,4 +1,5 @@
 use std::thread;
+use std::time::Duration;
 use std::sync::Arc;
 use std::sync::mpsc::{channel, Sender, Receiver};
 use std::cell::RefCell;
@@ -99,6 +100,8 @@ fn worker_loop<S: Clone + Eq>(tx: Sender<MessageToViewer>,
     use self::MessageFromViewer::*;
     use self::MessageToViewer::*;
 
+    let sleep_time = Duration::from_millis(25);
+
     let mut axiom: Option<Vec<S>> = None;
     let mut rules: Option<RulesValue<S>> = None;
     let mut lsystem: Option<LSystem<S>> = None;
@@ -153,6 +156,6 @@ fn worker_loop<S: Clone + Eq>(tx: Sender<MessageToViewer>,
         }
         // avoid over-charging the CPU thread
         // when waiting for a command
-        thread::sleep_ms(25);
+        thread::sleep(sleep_time);
     }
 }
