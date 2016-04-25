@@ -24,8 +24,8 @@ impl SimpleProcessor {
     pub fn iterate_slice<'a, S: Clone + Eq>(state: &[S],
                                             rules: &RulesValue<'a, S>)
                                             -> Result<Vec<S>, String> {
-        let estimated_result_size = rules.biggest_expansion();
-        let result_size = match state.len().checked_mul(estimated_result_size) {
+        let size_factor = rules.biggest_expansion();
+        let result_size = match state.len().checked_mul(size_factor) {
             Some(v) => v,
             None => {
                 return Err(format!("SimpleProcessor::iterate_slice : usize overflow when \
