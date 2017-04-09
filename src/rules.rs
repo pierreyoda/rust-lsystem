@@ -57,7 +57,8 @@ impl<S> HashMapRules<S>
     /// Return true if an existing rule was modified, false otherwise.
     pub fn set(&mut self, symbol: S, production: Vec<S>, interpretation: TurtleCommand) -> bool {
         let production_len = production.len();
-        let modified = match self.rules.insert(symbol, SymbolRule(production, interpretation)) {
+        let modified = match self.rules
+                  .insert(symbol, SymbolRule(production, interpretation)) {
             Some(_) => true,
             None => false,
         };

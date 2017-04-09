@@ -85,9 +85,7 @@ pub fn start_worker<S: 'static + Clone + Eq + Send>
     let (tx, rx_ui) = channel::<MessageToViewer>();
     let (tx_ui, rx) = channel::<MessageFromViewer<S>>();
 
-    thread::spawn(move || {
-        worker_loop(tx, rx, processor, interpreter);
-    });
+    thread::spawn(move || { worker_loop(tx, rx, processor, interpreter); });
 
     (tx_ui, rx_ui)
 }
@@ -140,7 +138,9 @@ fn worker_loop<S: Clone + Eq>(tx: Sender<MessageToViewer>,
                                  lsystem.as_ref().unwrap().state().len());
                     }
                     Interpret if lsystem.is_some() => {
-                        match interpreter.borrow_mut().interpret(lsystem.as_ref().unwrap()) {
+                        match interpreter
+                                  .borrow_mut()
+                                  .interpret(lsystem.as_ref().unwrap()) {
                             Ok(v) => tx.send(InterpretationFinished(v)).unwrap(),
                             Err(why) => tx.send(Error(why)).unwrap(),
                         }

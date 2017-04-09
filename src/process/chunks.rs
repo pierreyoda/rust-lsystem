@@ -27,9 +27,9 @@ impl ChunksProcessor {
                         chunks_size))
         } else {
             Ok(ChunksProcessor {
-                chunk_size: chunks_size,
-                pool: simple_parallel::Pool::new(max_tasks),
-            })
+                   chunk_size: chunks_size,
+                   pool: simple_parallel::Pool::new(max_tasks),
+               })
         }
     }
 }
@@ -48,9 +48,9 @@ impl<S> LProcessor<S> for ChunksProcessor
         let rem = state_len % self.chunk_size;
         let chunks_number = state_len / self.chunk_size +
                             match rem {
-            0 => 0,
-            _ => 1,
-        };
+                                0 => 0,
+                                _ => 1,
+                            };
         for _ in 0..chunks_number {
             vec.push(Vec::new());
         }
@@ -60,18 +60,19 @@ impl<S> LProcessor<S> for ChunksProcessor
         let rules = lsystem.rules().clone();
         let errors = Mutex::new(String::new());
         let chunks_iter = lsystem.state().chunks(self.chunk_size);
-        self.pool.for_(chunks_iter.enumerate(), |(n, chunk)| {
-            let result: Vec<S> = match SimpleProcessor::iterate_slice(chunk, &rules) {
-                Ok(v) => v,
-                Err(why) => {
-                    let mut error_lock = errors.lock().unwrap();
-                    *error_lock = format!("{}\n{}", *error_lock, why);
-                    Vec::new()
-                }
-            };
-            let mut chunk_data = sub_states.lock().unwrap();
-            chunk_data[n] = result;
-        });
+        self.pool
+            .for_(chunks_iter.enumerate(), |(n, chunk)| {
+                let result: Vec<S> = match SimpleProcessor::iterate_slice(chunk, &rules) {
+                    Ok(v) => v,
+                    Err(why) => {
+                        let mut error_lock = errors.lock().unwrap();
+                        *error_lock = format!("{}\n{}", *error_lock, why);
+                        Vec::new()
+                    }
+                };
+                let mut chunk_data = sub_states.lock().unwrap();
+                chunk_data[n] = result;
+            });
 
         // Error handling
         let error_lock = errors.lock().unwrap();
